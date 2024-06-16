@@ -1,0 +1,25 @@
+.complexity-graph {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+  gap: 20px; /* Adds space between items */
+}
+
+.complexity-item {
+  background-color: #282c34; /* Change this to match your editor's background color */
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  width: 200px;
+  color: white; /* Ensures text is visible on a dark background */
+}
+
+.complexity-label {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.complexity-value {
+  font-size: 1.2em;
+  color: white; /* Ensures text is visible on a dark background */
+}
