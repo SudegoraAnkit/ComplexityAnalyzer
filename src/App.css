@@ -75,6 +75,83 @@ h1 {
   }
 }
 
+.select-container {
+  display: inline-block;
+  position: relative;
+  width: 250px; /* Increased width */
+}
+
+.select-container select {
+  background-color: #282c34; /* Editor's background color */
+  color: white; /* Text color for better visibility */
+  border: 2px solid; /* Border with multiple colors */
+  border-image: linear-gradient(45deg, red, yellow, green, blue, purple) 1;
+  border-radius: 10px; /* More rounded corners */
+  padding: 15px; /* Increased padding */
+  padding-right: 40px; /* Space for the arrow */
+  outline: none;
+  font-size: 1em;
+  font-family: 'Arial', sans-serif; /* Stylish font */
+  appearance: none; /* Remove default arrow */
+  -webkit-appearance: none; /* Remove default arrow for Safari */
+  -moz-appearance: none; /* Remove default arrow for Firefox */
+}
+
+.select-container::after {
+  content: '\25BC'; /* Down arrow */
+  color: #61dafb; /* Match color to heading */
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none; /* Prevent pointer events on the arrow */
+  font-size: 1em; /* Adjust size to match font */
+}
+
+.select-container select:focus {
+  border-image: linear-gradient(45deg, purple, blue, green, yellow, red) 1;
+}
+
+.dark-mode {
+  background-color: #2e3440;
+  color: white;
+}
+
+.light-mode {
+  background-color: #ffffff;
+  color: black;
+}
+
+.dark-header {
+  background-color: #282c34;
+  color: white;
+  padding: 10px 20px;
+}
+
+.light-header {
+  background-color: #61dafb;
+  color: black;
+  padding: 10px 20px;
+}
+
+.dark-button {
+  background-color: yellow;
+  color: black;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.light-button {
+  background-color: #61dafb;
+  color: black;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
 
 
 /* Add any global styles or overrides here */

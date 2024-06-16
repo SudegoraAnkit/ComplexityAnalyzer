@@ -1,21 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import CodeEditor from './component/CodeEditor';
 import SubmitButton from './component/SubmitButton';
 import ProgressBar from './component/ProgressBar';
 import ResultBox from './component/ResultBox';
+import ComplexityGraph from './component/ComplexityGraph';
 import { Resizable } from 'react-resizable';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 
 const MODEL_NAME = "gemini-1.5-flash";
-const API_KEY = ""; // Replace with your actual API key
+
+
 
 const App = () => {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('javascript'); // Default language is JavaScript
+  const [timeComplexity, setTimeComplexity] = useState('');
+  const [spaceComplexity, setSpaceComplexity] = useState('');
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
+  useEffect(() => {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        setIsDarkMode(savedTheme === 'dark');
+      }
+    }, []);
+
+useEffect(() => {
+    document.body.className = isDarkMode ? 'dark-mode' : 'light-mode';
+  }, [isDarkMode]);
+  
   const handleCodeChange = (newCode) => {
     setCode(newCode);
   };
@@ -24,9 +40,30 @@ const App = () => {
     setSelectedLanguage(event.target.value);
   };
 
+  const toggleTheme = () => {
+      setIsDarkMode(!isDarkMode);
+      localStorage.setItem('theme', !isDarkMode ? 'dark' : 'light');
+    };
+
+    const extractComplexities = (result) => {
+        const timeRegex = /Time Complexity:\s*(O\(.+?\))/i;
+        const spaceRegex = /Space Complexity:\s*(O\(.+?\))/i;
+        const timeMatch = result.match(timeRegex);
+        const spaceMatch = result.match(spaceRegex);
+        setTimeComplexity(timeMatch ? timeMatch[1] : 'N/A');
+        setSpaceComplexity(spaceMatch ? spaceMatch[1] : 'N/A');
+      };
   const runChat = async () => {
     setLoading(true);
+    const API_KEY = process.env.REACT_APP_GEMINI_API_KEY // Replace with your actual API key
+    console.log('API Key:', process.env.REACT_APP_GEMINI_API_KEY);
 
+    if (!API_KEY) {
+      console.error('API Key is undefined. Make sure to set it in the .env file.');
+      setResult('API Key is missing.');
+      setLoading(false);
+      return;
+    }
     const genAI = new GoogleGenerativeAI(API_KEY);
     const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
@@ -77,6 +114,7 @@ const App = () => {
       const result = await chat.sendMessage(promptText); // Sending promptText as the message
       const response = result.response;
       setResult(response.text());
+      extractComplexities(response.text());
     } catch (error) {
       console.error('Error while sending message:', error);
       setResult('Error occurred while processing.');
@@ -87,14 +125,26 @@ const App = () => {
 
   return (
     <div className="App">
-      <h1>Time And Space Complexity Analyzer</h1>
+      <header className={isDarkMode ? 'dark-header' : 'light-header'}>
+        <h1>Time And Space Complexity Analyzer</h1>
+        <button className={isDarkMode ? 'dark-button' : 'light-button'} onClick={toggleTheme}>
+          {isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        </button>
+      </header>
       <div className="language-selector">
         <label htmlFor="language">Select Language: </label>
         <select id="language" value={selectedLanguage} onChange={handleLanguageChange}>
           <option value="javascript">JavaScript</option>
-          <option value="java">Java</option>
-          <option value="python">Python</option>
-          <option value="c">C</option>
+              <option value="java">Java</option>
+              <option value="python">Python</option>
+              <option value="c">C</option>
+              <option value="cpp">C++</option>
+              <option value="ruby">Ruby</option>
+              <option value="go">Go</option>
+              <option value="swift">Swift</option>
+              <option value="rust">Rust</option>
+              <option value="php">PHP</option>
+              <option value="shell">Shell</option>
         </select>
       </div>
       <Resizable width={800} height={400} minWidth={200} minHeight={200}>
@@ -103,6 +153,9 @@ const App = () => {
       <SubmitButton onClick={runChat} text="Analyze Code" />
       {loading && <ProgressBar />}
       {result && <ResultBox content={result} />}
+      {timeComplexity && spaceComplexity && (
+      <ComplexityGraph timeComplexity={timeComplexity} spaceComplexity={spaceComplexity} />
+    )}
     </div>
   );
 };
