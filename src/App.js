@@ -56,7 +56,7 @@ const App = () => {
       },
     ];
 
-    const promptText = `Find the time complexity and space complexity of the following code:\n${code}\n It should also tell which language it is?, Tell How it can be optimized and give the optimized code, also Explain where to read these?`;
+    const promptText = `Find the time complexity and space complexity of the following code:\n${code}\n It should also tell which language it is?, Tell How it can be optimized and give the optimized code, also Explain where to read these? Give Time and Space complexity in heading 1`;
 
     const chat = model.startChat({
       generationConfig,
