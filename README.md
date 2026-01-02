@@ -1,206 +1,236 @@
-# ComplexityAnalyzer
+# ComplexityAnalyzer — React-focused README
 
-ComplexityAnalyzer is a developer tool to measure and report code complexity across a codebase. It helps engineers and teams discover hotspots (high cyclomatic complexity, deep nesting, long functions, etc.), generate human-readable reports, and integrate complexity checks into CI to keep code maintainable.
+ComplexityAnalyzer helps you measure and report code complexity in React projects (JavaScript/TypeScript, .js/.jsx/.ts/.tsx). This README is tailored for React applications — it includes React-specific installation, examples and best-practices for CI.
 
-> NOTE: This README is intentionally language- and packaging-agnostic. If you tell me which language(s)/package manager this repository uses (for example Python, JavaScript/Node, Java, Go, etc.), I will tailor the install and usage sections and add real examples and badges.
+Briefly, ComplexityAnalyzer finds hotspots such as high cyclomatic complexity, long functions, deep nesting and more, and generates JSON/HTML/Markdown reports for human review or automation.
 
-## Features
+> Note: Replace package/CLI names with the actual package name or local script if this repository uses a different one (for example using an internal CLI built in this repo). The examples assume the CLI name `complexity-analyzer` and an importable module `complexity-analyzer`.
 
-- Analyze a codebase to detect complexity hotspots:
-  - Cyclomatic complexity
-  - Function/method length
-  - Nesting depth
-  - Cognitive complexity (where applicable)
-  - File- and module-level summaries
-- Produce reports in multiple formats (JSON, HTML, Markdown)
-- CLI for quick scans and integration in CI pipelines
-- Programmatic API for embedding analysis in tooling or editors
-- Configurable thresholds and ignore rules
-- Exit codes suitable for CI (fail build on threshold breach)
+## Features (React-relevant)
 
-## Quickstart
+- Analyze React code (.js, .jsx, .ts, .tsx)
+- Cyclomatic complexity, function/method length, nesting depth, cognitive complexity
+- File- and component-level summaries (e.g., complexity per component)
+- Reports: JSON, HTML, Markdown
+- CLI for local runs and CI
+- Programmatic JS/Node API for custom tooling or editor integrations
+- Configurable thresholds and ignore rules for generated/vendor files
+- Exit codes suitable for CI pipelines
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/SudegoraAnkit/ComplexityAnalyzer.git
-   cd ComplexityAnalyzer
-   ```
+## Installation
 
-2. Install dependencies and build
-   - Replace the commands below with the correct ones for your project (npm/pip/maven/go):
-     ```bash
-     # Example placeholders; update for your language
-     # Node.js
-     npm install
+Install as a dev dependency in your React project:
 
-     # Python
-     # python -m venv .venv
-     # source .venv/bin/activate
-     # pip install -r requirements.txt
-
-     # Java (Maven)
-     # mvn install
-     ```
-
-3. Run a scan (example CLI):
-   ```bash
-   # Generic example — replace with this repo's actual CLI command if different
-   ./bin/complexity-analyzer scan ./src \
-     --output report.json \
-     --format json \
-     --threshold cyclomatic=10,function-length=200
-   ```
-
-4. Open the HTML report (if generated):
-   ```bash
-   # Example:
-   open report.html
-   ```
-
-If you prefer to use a programmatic API, see the "Programmatic usage" section below.
-
-## CLI Usage (example)
-
-The repository includes a CLI that supports the following common options:
-
-- `scan <path>` — analyze the code at `<path>`
-- `--format <json|html|md>` — output format
-- `--output <file>` — write report to a file
-- `--threshold <key=value,...>` — set thresholds that cause non-zero exit code
-- `--ignore <glob,glob,...>` — exclude files or directories
-- `--config <file>` — specify a config file (JSON/YAML/TOML)
-
-Example:
+- npm
 ```bash
-complexity-analyzer scan ./project \
-  --format html \
-  --output ./reports/complexity.html \
-  --threshold cyclomatic=12,function-length=180 \
-  --ignore "tests/**,vendor/**"
+npm install --save-dev complexity-analyzer
 ```
 
-## Programmatic usage (example)
+- yarn
+```bash
+yarn add --dev complexity-analyzer
+```
 
-Below are two conceptual examples. Replace with the actual import/usage for the language implemented in this repository.
+Or run without installing using npx:
+```bash
+npx complexity-analyzer scan ./src --format json --output report.json
+```
 
-JavaScript/Node example:
+If this repo builds a local CLI, you may run it from the project root:
+```bash
+# If the CLI is in ./bin/complexity-analyzer
+./bin/complexity-analyzer scan ./src --format html --output reports/complexity.html
+```
+
+## Quickstart (scan a React app)
+
+1. From your React project root (where package.json lives):
+```bash
+# scan source directory for common React extensions
+npx complexity-analyzer scan ./src \
+  --extensions .js,.jsx,.ts,.tsx \
+  --format html \
+  --output reports/complexity.html \
+  --threshold cyclomatic=12,function-length=200 \
+  --ignore "node_modules/**,build/**,dist/**"
+```
+
+2. Open the HTML report:
+```bash
+open reports/complexity.html   # macOS
+# or
+xdg-open reports/complexity.html  # Linux
+start reports/complexity.html  # Windows (in PowerShell)
+```
+
+## Recommended CLI options for React
+
+- --extensions .js,.jsx,.ts,.tsx  — ensure JSX/TSX files are analyzed
+- --ignore "node_modules/**,build/**,dist/**,public/**" — skip vendor and build outputs
+- --threshold cyclomatic=10,function-length=150 — tune to your codebase
+- --config .complexityrc.yml — centralize settings
+
+Example package.json script:
+```json
+{
+  "scripts": {
+    "complexity:scan": "complexity-analyzer scan ./src --extensions .js,.jsx,.ts,.tsx --format html --output reports/complexity.html --threshold cyclomatic=12,function-length=200 --ignore \"node_modules/**,build/**,dist/**\""
+  }
+}
+```
+
+Run:
+```bash
+npm run complexity:scan
+```
+
+## Programmatic usage (Node / JS)
+
+Use the analyzer from scripts or build tools to integrate with custom reporting or CI steps.
+
+CommonJS example:
 ```js
-const analyzer = require('complexity-analyzer');
+const { analyze } = require('complexity-analyzer');
 
 (async () => {
-  const result = await analyzer.analyze({
+  const result = await analyze({
     path: './src',
-    thresholds: { cyclomatic: 10, functionLength: 200 },
-    ignore: ['tests/**']
+    extensions: ['.js', '.jsx', '.ts', '.tsx'],
+    thresholds: { cyclomatic: 12, functionLength: 200 },
+    ignore: ['node_modules/**', 'build/**'],
+    // parser: 'babel' // optional: specify parser if supported
   });
 
   console.log(result.summary);
-  // Save JSON report
-  require('fs').writeFileSync('report.json', JSON.stringify(result, null, 2));
+  require('fs').writeFileSync('reports/complexity.json', JSON.stringify(result, null, 2));
 })();
 ```
 
-Python example:
-```py
-from complexity_analyzer import analyze
+ES Module / TypeScript import:
+```ts
+import { analyze } from 'complexity-analyzer';
 
-result = analyze(path="./src", thresholds={'cyclomatic': 10}, ignore=['tests/**'])
-print(result['summary'])
-# save
-import json
-with open('report.json','w') as f:
-    json.dump(result, f, indent=2)
+const result = await analyze({
+  path: './src',
+  extensions: ['.ts', '.tsx', '.js', '.jsx'],
+  thresholds: { cyclomatic: 12 }
+});
 ```
 
-If you tell me the project's language I will replace these placeholders with exact import paths and examples.
+Programmatic usage is useful to:
+- Fail CI builds when thresholds exceeded
+- Post results to dashboards
+- Create PR comments with summarized findings
+- Integrate with pre-commit or pre-push hooks
 
-## Configuration
+## Configuration example (.complexityrc.yml)
 
-You can provide a configuration file to set defaults and CI-friendly behavior. Example file (YAML/JSON/TOML — whichever suits your repo):
-
+Place in project root to centralize settings:
 ```yaml
-# .complexityrc.yml
 paths:
   - src
+extensions:
+  - .js
+  - .jsx
+  - .ts
+  - .tsx
 exclude:
-  - tests/**
+  - node_modules/**
+  - build/**
+  - dist/**
 thresholds:
-  cyclomatic: 10
+  cyclomatic: 12
   functionLength: 200
 report:
   format: html
   output: reports/complexity.html
+parser:
+  # optionally specify parser: "babel" or "typescript" depending on implementation
+  name: babel
 ```
 
-The CLI will look for a config file in the project root (`.complexityrc.yml`, `.complexityrc.json`, etc.) unless `--config` is provided.
+## CI Integration (GitHub Actions example)
 
-## CI Integration
+Add a job to run the analyzer and upload the report artifact:
 
-Run the analyzer as part of your continuous integration pipeline and fail the build if thresholds are exceeded.
-
-Example GitHub Actions job (generic):
 ```yaml
+name: Complexity Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
 jobs:
   complexity:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
       - name: Install dependencies
-        run: # install deps for your language
+        run: npm ci
       - name: Run ComplexityAnalyzer
-        run: complexity-analyzer scan ./src --format json --output report.json --threshold cyclomatic=12
+        run: npm run complexity:scan
       - name: Upload report
         uses: actions/upload-artifact@v4
         with:
           name: complexity-report
-          path: report.json
+          path: reports/complexity.html
 ```
 
-## Output
+To fail the job when thresholds are exceeded, the CLI should return a non-zero exit code when a threshold is breached — ensure your CI step checks that behavior (this is the default mode for CI-friendly analyzers).
 
-- Summary: counts and averages (files scanned, functions analyzed, average and max complexity)
-- Detailed list of items above thresholds (file, function/method, complexity metric, suggestion)
-- Machine-readable JSON for automation
-- Pretty HTML/Markdown for human review
+## Interpreting output (React-specific tips)
 
-## Contributing
+- Focus on component files (files containing JSX/TSX). Complex UI logic, large render methods or big hooks can inflate complexity.
+- Look for long components with many conditional render branches — consider extracting subcomponents.
+- For function components using hooks, complex effect or memo logic can be refactored into custom hooks.
+- Detect deeply nested callbacks or render logic — pull out helper functions or smaller components.
+- Use thresholds more strict for shared components or library code, more lenient in one-off pages.
 
-Contributions are welcome. Typical contributions include:
+## Example suggestions (based on findings)
 
-- Add language parsers or complexity metrics
-- Improve heuristics for cognitive complexity
-- Add new output formats or CI integrations
-- Add tests or improve test coverage
-- Update docs and examples
-
-Steps to contribute:
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feat/my-change`
-3. Run and add tests
-4. Open a pull request with a clear description of the change
-
-Please follow the code style and include tests for new functionality.
-
-## Roadmap / Ideas
-
-- Add language-specific analyzers (if not present)
-- Add visualization dashboards
-- Provide editor/IDE plugins (VS Code extension)
-- Granular suggestion engine (refactor suggestions)
-- Baseline support to compare against previous runs
+- Cyclomatic complexity high: extract condition branches into small functions or subcomponents
+- Function length high: split into smaller functions or components
+- Deep nesting: early returns, guard clauses, or split into smaller components
+- Cognitive complexity: add comments or simplify logic; consider custom hooks for repeated logic
 
 ## Troubleshooting
 
-- Large codebase runs slowly — consider scanning only changed files in CI.
-- False positives — use the `ignore` configuration to exclude generated or vendor files.
-- Missing parser for a language — open an issue and we can add support.
+- False positives on generated code: add patterns to `exclude` (e.g., `.generated.js`, `src/__generated__/**`).
+- TypeScript parsing errors: ensure parser option is set to TypeScript if supported, or include tsconfig path if required.
+- Large repos: run incremental scans in CI (changed files only) or set narrower `paths`.
+
+## Contributing (React focus)
+
+Contributions are welcome — especially for:
+- Improving React/JSX/TSX parsing and heuristics
+- Adding React-specific suggestions (hooks, memoization)
+- Better component-level reporting (per-component metrics)
+- Editor integrations (VS Code extension) for in-line warnings
+
+1. Fork the repo
+2. Create a branch: `git checkout -b feat/react-improvements`
+3. Add tests (preferably against React sample components)
+4. Open a pull request describing the change
+
+## Roadmap / Ideas
+
+- Add a React mode that surfaces component-specific findings (e.g., prop-count, render-size)
+- Visualization of complexity over component tree
+- VS Code extension to show complexity inline
+- Baseline support to compare PR changes against main branch
 
 ## License
 
-This repository is available under the MIT License. Change as appropriate.
+This repository is available under the MIT License.
 
 ## Maintainer
 
 - SudegoraAnkit (GitHub: @SudegoraAnkit)
 
 ---
+
